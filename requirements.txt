@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+torch
+numpy
+opencv-python
+Pillow
+matplotlib
+ultralytics

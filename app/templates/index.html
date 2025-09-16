@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>YOLOv8 Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; padding: 30px; }
+    h1 { color: #333; }
+    .upload-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: inline-block; }
+    input[type=file] { margin: 10px 0; }
+    button { padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 20px; }
+    img { max-width: 600px; border-radius: 8px; margin-top: 15px; }
+    ul { list-style: none; padding: 0; }
+    li { background: #e9ecef; margin: 5px 0; padding: 6px 10px; border-radius: 5px; }
+
+    .model-info { 
+      margin-top: 20px; 
+      font-size: 13px; 
+      color: #444; 
+    }
+    .model-info h3 { 
+      margin-bottom: 6px; 
+      font-size: 14px; 
+      color: #222; 
+    }
+    .model-info p { 
+      margin: 0 0 8px; 
+    }
+    .metrics {
+      border-collapse: collapse; 
+      font-size: 12px; 
+      background: #fff; 
+      border-radius: 6px; 
+      overflow: hidden; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin: 0 auto;
+    }
+    .metrics th, .metrics td { 
+      border: 1px solid #ddd; 
+      padding: 4px 16px; 
+      text-align: center; 
+    }
+    .metrics th { 
+      background: #f1f1f1; 
+      font-weight: bold; 
+    }
+    .metrics tr:nth-child(even) { 
+      background: #fafafa; 
+    }
+
+  </style>
+</head>
+<body>
+  <h1>YOLOv8 Object Detection</h1>
+  <div class="upload-box">
+    <input type="file" id="fileInput">
+    <br>
+    <button onclick="upload()">Загрузить и распознать</button>
+  </div>
+
+  <div class="model-info">
+    <h3>Характеристики модели</h3>
+    <p>10 эпох, размер 640px<br>Датасет: 1824 фото (тест: 181 фото)</p>
+    <table class="metrics">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Images</th>
+          <th>Precision</th>
+          <th>Recall</th>
+          <th>mAP50</th>
+          <th>mAP50-95</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>all</td>
+          <td>181</td>
+          <td>0.779</td>
+          <td>0.786</td>
+          <td>0.791</td>
+          <td>0.384</td>
+        </tr>
+        <tr>
+          <td>guk</td>
+          <td>74</td>
+          <td>0.903</td>
+          <td>0.829</td>
+          <td>0.881</td>
+          <td>0.488</td>
+        </tr>
+        <tr>
+          <td>lich</td>
+          <td>111</td>
+          <td>0.655</td>
+          <td>0.743</td>
+          <td>0.701</td>
+          <td>0.281</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    async function upload() {
+      
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "Обработка...";
+
+      const fileInput = document.getElementById('fileInput');
+      if (!fileInput.files.length) {
+        alert("Выберите файл!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      const response = await fetch("/predict", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      resultDiv.innerHTML = "";
+
+      if (data.items.length === 0) {
+        resultDiv.innerHTML = "<p>Ничего не найдено</p>";
+        return;
+      }
+
+      const img = document.createElement("img");
+      img.src = "data:image/jpeg;base64," + data.photo;
+      resultDiv.appendChild(img);
+
+      const ul = document.createElement("ul");
+      data.items.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item.name + " — [" + item.bbox.join(", ") + "]";
+        ul.appendChild(li);
+      });
+      resultDiv.appendChild(ul);
+    }
+  </script>
+</body>
+</html>
