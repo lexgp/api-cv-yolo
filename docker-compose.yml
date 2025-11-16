@@ -4,4 +4,4 @@ services:
       context: .
     image: beetle:latest
     ports:
-      - "8000:8000"
+      - "8080:8080"
