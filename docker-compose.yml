@@ -2,6 +2,6 @@ services:
   app:
     build:
       context: .
-    image: myapp:latest
+    image: beetle:latest
     ports:
       - "8000:8000"
